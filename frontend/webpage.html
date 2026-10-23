@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Complete Webpage</title>
+</head>
+<body>
+
+    <div id="navigation-tabs" style="margin-bottom: 20px;">
+        <button id="tab-goto-signup" style="padding: 8px 16px; margin-right: 10px;">Go to Sign Up</button>
+        <button id="tab-goto-login" style="padding: 8px 16px; margin-right: 10px;">Go to Log In</button>
+        <button id="tab-goto-terms" style="padding: 8px 16px;">Terms & Privacy</button>
+    </div>
+
+    <div id="signup-screen">
+        <h2>Create Your Account</h2>
+        <form id="signup-form"></form>
+    </div>
+
+    <div id="login-screen" style="display: none;">
+        <h2>Log In</h2>
+        <form id="login-form">
+            <label>Email: </label>
+            <input type="email" id="login-email" required><br><br>
+            <label>Password: </label>
+            <input type="password" id="login-password" required><br><br>
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+
+    <div id="dashboard-screen" style="display: none;">
+        <h2>Welcome Back!</h2>
+        <h3>Your Profile Details:</h3>
+        <div id="profile-card"></div>
+        <div id="profile-actions" style="margin-top: 20px;"></div>
+        <hr style="margin-top: 30px;">
+        <button id="logout-btn" style="padding: 8px 16px;">Log Out</button>
+    </div>
+
+    <div id="terms-screen" style="display: none;">
+        <h2 id="terms-title"></h2>
+        <p id="terms-description" style="font-style: italic; margin-bottom: 20px;"></p>
+        <div id="terms-sections"></div>
+        <br>
+        <button id="terms-return-btn" style="padding: 8px 16px;"></button>
+    </div>
+
+        <script>
+        const appData = {
+          "signupFields": [
+            { "name": "email", "label": "Email Address", "type": "email", "placeholder": "name@example.com", "required": true },
+            { "name": "firstName", "label": "First Name", "type": "text", "placeholder": "Enter your first name", "required": true },
+            { "name": "lastName", "label": "Last Name", "type": "text", "placeholder": "Enter your last name", "required": true },
+            { "name": "address", "label": "Street Address", "type": "text", "placeholder": "12345 Drive Street", "required": true },
+            { "name": "state", "label": "State", "type": "text", "placeholder": "Enter your state", "required": true },
+            { "name": "city", "label": "City", "type": "text", "placeholder": "Enter your city", "required": true },
+            { "name": "zipCode", "label": "Zip Code", "type": "text", "placeholder": "Enter your Zip Code", "required": true },
+            { "name": "ssn", "label": "Social Security Number", "type": "text", "placeholder": "Enter your Social Security Number", "required": true },
+            { "name": "password", "label": "Password", "type": "password", "placeholder": "Create a strong password", "required": true },
+            { "name": "termsAccepted", "label": "I agree to the Terms of Service and Privacy Policy", "type": "checkbox", "required": true, "defaultValue": true },
+            { "name": "subscribetoNewsletter", "label": "Subscribe to our newsletter!!", "type": "checkbox", "required": true, "defaultValue": true }
+          ],
+          "profileIdentity": {
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "email": "jane@example.com",
+            "address": "12345 Drive Street",
+            "state": "Texas",
+            "city": "Dallas",
+            "zipCode": "71111",
+            "ssn": "123-45-6789"
+          },
+          "ui_actions": [
+            { "action_id": "btn_edit_profile", "label": "Edit Profile", "style": "primary", "onclick_handler": "window.location.reload();" },
+            { "action_id": "btn_delete_profile", "label": "Delete Profile", "style": "danger", "onclick_handler": "javascript:void(0);" }
+          ],
+          "termsAndPrivacy": {
+            "pageId": "terms_and_privacy_policy",
+            "title": "Terms of Service and Privacy Policy",
+            "description": "When you use our services, you’re trusting us with your information. We appreciate your trust in us to do that carefully and sensibly. This Notice outlines how we collect and use the personal data of our users.",
+            "sections": [
+              { "name": "DataCollected", "heading": "What Data We Collect", "content": "We collect information to provide better services to all our users. We simply ask for an email and password. We will never ask for your home address or Social Security Number. Please keep in mind if any of these requests are made to ignore them and report the issue to support." },
+              { "name": "WhyWeNeedInfo", "heading": "Why We Need Your Info", "content": "We collect user login information strictly to verify your identity and sign you into your account. We will not use your activity information to target ads or products." },
+              { "name": "ThirdPartySharing", "heading": "Sharing With Other Websites", "content": "Your information is safely stored and never shared with third-party sites. Your data is intended to stay within our database and not be sold for profit to outside companies." },
+              { "name": "AccountDeletion", "heading": "Deleting Your Account", "content": "As soon as you hit the delete button, we promise to have your account wiped from our database. All your personal information will not be able to be retrieved anymore. It is permanently wiped and we are unable to reverse any changes." }
+            ],
+            "ReturnButton": { "text": "Return to Sign Up", "target": "signup.json" }
+          }
+        };
+
+        const navTabs = document.getElementById('navigation-tabs');
+        const signupScreen = document.getElementById('signup-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const dashboardScreen = document.getElementById('dashboard-screen');
+        const termsScreen = document.getElementById('terms-screen');
+        
+        const signupForm = document.getElementById('signup-form');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        const card = document.getElementById('profile-card');
+        const actionsContainer = document.getElementById('profile-actions');
+
+        function showScreen(screenToShow) {
+            signupScreen.style.display = 'none';
+            loginScreen.style.display = 'none';
+            dashboardScreen.style.display = 'none';
+            termsScreen.style.display = 'none';
+            screenToShow.style.display = 'block';
+        }
+
+        document.getElementById('tab-goto-signup').addEventListener('click', function() { showScreen(signupScreen); });
+        document.getElementById('tab-goto-login').addEventListener('click', function() { showScreen(loginScreen); });
+        document.getElementById('tab-goto-terms').addEventListener('click', function() { showScreen(termsScreen); });
+        appData.signupFields.forEach(field => {
+            const container = document.createElement('div');
+            container.style.marginBottom = "10px";
+
+            const label = document.createElement('label');
+            label.innerText = field.label + ": ";
+
+            const input = document.createElement('input');
+            input.type = field.type;
+            input.name = field.name;
+            if (field.placeholder) input.placeholder = field.placeholder;
+            if (field.required) input.required = true;
+            if (field.type === 'checkbox' && field.defaultValue) input.checked = true;
+
+            if (field.type === 'checkbox') {
+                container.appendChild(input);
+                container.appendChild(label);
+            } else {
+                label.style.display = "block";
+                container.appendChild(label);
+                container.appendChild(input);
+            }
+            signupForm.appendChild(container);
+        });
+
+        const signupSubmitBtn = document.createElement('button');
+        signupSubmitBtn.type = 'submit';
+        signupSubmitBtn.innerText = "Sign Up";
+        signupSubmitBtn.style.display = "block";
+        signupSubmitBtn.style.marginTop = "15px";
+        signupForm.appendChild(signupSubmitBtn);
+
+        const identity = appData.profileIdentity;
+        for (const key in identity) {
+            const row = document.createElement('p');
+            row.innerHTML = "<strong>" + key + ":</strong> " + identity[key];
+            card.appendChild(row);
+        }
+
+        appData.ui_actions.forEach(action => {
+            const btn = document.createElement('button');
+            btn.innerText = action.label;
+            btn.id = action.action_id;
+            
+            if (action.style === 'danger') {
+                btn.style.backgroundColor = 'red';
+                btn.style.color = 'white';
+            } else {
+                btn.style.backgroundColor = 'blue';
+                btn.style.color = 'white';
+            }
+            
+            btn.style.marginRight = '10px';
+            btn.style.padding = '8px 16px';
+            btn.style.border = 'none';
+            btn.style.cursor = 'pointer';
+            btn.setAttribute('onclick', action.onclick_handler);
+            actionsContainer.appendChild(btn);
+        });
+
+                const termsData = appData.termsAndPrivacy;
+        document.getElementById('terms-title').innerText = termsData.title;
+        document.getElementById('terms-description').innerText = termsData.description;
+        
+        const termsSectionsContainer = document.getElementById('terms-sections');
+        termsData.sections.forEach(sec => {
+            const heading = document.createElement('h4');
+            heading.innerText = sec.heading;
+            
+            const content = document.createElement('p');
+            content.innerText = sec.content;
+            
+            termsSectionsContainer.appendChild(heading);
+            termsSectionsContainer.appendChild(content);
+        });
+
+        const termsReturnBtn = document.getElementById('terms-return-btn');
+        termsReturnBtn.innerText = termsData.ReturnButton.text;
+        termsReturnBtn.addEventListener('click', function() {
+            showScreen(signupScreen);
+        });
+
+        signupForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert("Account registered successfully! Now please log in.");
+            showScreen(loginScreen);
+            signupForm.reset();
+        });
+
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            navTabs.style.display = 'none';
+            showScreen(dashboardScreen);
+            loginForm.reset();
+        });
+
+        logoutBtn.addEventListener('click', function() {
+            navTabs.style.display = 'block';
+            showScreen(loginScreen);
+        });
+    </script>
+
+</body>
+</html>
